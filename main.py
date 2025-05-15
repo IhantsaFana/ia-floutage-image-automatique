@@ -17,7 +17,7 @@ model_gemini = genai.GenerativeModel('gemini-2.0-flash')
 
 # 1. Initialisation
 model = YOLO("yolo11n.pt")
-image_path = "assets/eauvive.jpg"
+image_path = "assets/fanta.jpg"
 image = cv2.imread(image_path)
 
 # 2. Détection de la personne
@@ -49,10 +49,12 @@ for i, box in enumerate(results[0].boxes.xyxy):
     # 6. Requête Gemini
     try:
         question = (
-            f"Connais-tu cette marque de boisson : {marque} ? "
-            f"Si {marque} n'est pas connue ou est mal orthographiée, identifie, s'il en existe une, une boisson similaire couramment disponible et appelle-la : `marque_trouvée`. "
-            "La boisson `marque_trouvée` est-elle sucrée ? "
-            "Réponds uniquement par `oui` ou `non` sans aucune explication."
+            f"Voici un texte extrait par OCR depuis un logo sur une bouteille : \"{marque}\".\n"
+            f"Ignore les caractères spéciaux, les erreurs ou le bruit dans ce texte. "
+            f"Tente d'identifier s'il contient ou ressemble à une marque de boisson connue.\n"
+            f"Si tu reconnais une marque ou que tu peux la deviner, appelle-la : `marque_trouvée`.\n"
+            f"La boisson `marque_trouvée` est-elle sucrée ?\n"
+            f"Réponds uniquement par `oui` ou `non` sans aucune explication."
         )
 
         response = model_gemini.generate_content(question)
@@ -73,8 +75,8 @@ for i, box in enumerate(results[0].boxes.xyxy):
         roi = cv2.GaussianBlur(roi, (51, 51), 0)
         image[logo_y1:logo_y2, logo_x1:logo_x2] = roi
 
-        cv2.imwrite(f"image_floutee_{marque}_{i+1}.jpg", image)
-        print(f"Image floutée et sauvegardée sous 'image_floutee_{marque}_{i+1}.jpg'")
+        cv2.imwrite(f"image_floutee_{i+1}.jpg", image)
+        print(f"Image floutée et sauvegardée sous 'image_floutee_{i+1}.jpg'")
     else:
         cv2.imwrite("image_originale.jpg", image)
         print("Image originale sauvegardée sous 'image_originale.jpg'")
