@@ -86,10 +86,31 @@ class DetectionAPIView(APIView):
                 continue
 
             # Interroger Gemini
-            question = f"Est-ce que la boisson {marque} est sucrée ? Réponds uniquement par 'oui' ou 'non'."
+            question = f"""
+                Le nom ci-dessous désigne-t-il un produit sucré ou considéré comme de la malbouffe ?
+                Réponds uniquement par 'oui' ou 'non'.
+
+                Nom extrait : {marque}
+
+                Note : le nom peut contenir des erreurs dues à la reconnaissance automatique (OCR).
+                Si le nom ressemble à une marque ou un aliment connu (ex. "Pepsl" ≈ "Pepsi", "Fanla" ≈ "Fanta", "AGOS" ≈ "Tacos", "beauipeate" ≈ "eau plate", etc.), corrige-le mentalement avant de répondre.
+
+                Réponds 'oui' si :
+                - Il s'agit d'une boisson sucrée (soda, jus industriel, boisson lactée sucrée, boisson énergisante, etc.)
+                - Il s'agit d'un produit contenant du sucre ajouté, des édulcorants artificiels, ou des additifs ultra-transformés
+                - Il s'agit d'un aliment ou d'une marque largement reconnu(e) comme de la "malbouffe" (fast-food, snack industriel, chips, tacos, burger, pizza, frites, etc.)
+                - C’est un plat industriel ou un aliment ultra-transformé
+
+                Réponds 'non' seulement si tu es certain(e) qu’aucun de ces critères ne s’applique (par exemple : eau, fruits frais, riz nature, pâtes nature, aliments non transformés et non sucrés).
+                """
+
+
+
+
             try:
                 response = model_gemini.generate_content(question)
                 reponse_texte = response.text.strip().lower()
+                print('Reponse de Gemini : ' + reponse_texte)
             except Exception:
                 continue
 
